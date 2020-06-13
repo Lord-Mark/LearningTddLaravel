@@ -17,14 +17,12 @@ class BookReservationTest extends TestCase
 
         $this->withoutExceptionHandling();
 
-        $response = $this->post('/books', [
-            'title' => 'Cool title',
-            'author' => 'Mark',
-        ]);
+        $response = $this->post('/books', $this->formInput());
 
-        $response->assertOK();
+        $book = Book::first();
 
         $this->assertCount(1, Book::all());
+        $response->assertRedirect($book->path());
     }
 
     /**
@@ -34,10 +32,9 @@ class BookReservationTest extends TestCase
     {
         // $this->withoutExceptionHandling();
 
-        $response = $this->post('/books', [
-            'title' => '',
-            'author' => 'Mark',
-        ]);
+        $response = $this->post('/books',
+            array_merge($this->formInput(), ['title' => ''])
+        );
 
         $response->assertSessionHasErrors('title');
     }
@@ -49,10 +46,9 @@ class BookReservationTest extends TestCase
     {
         // $this->withoutExceptionHandling();
 
-        $response = $this->post('/books', [
-            'title' => 'Cool book',
-            'author' => '',
-        ]);
+        $response = $this->post('/books', 
+            array_merge($this->formInput(), ['author' => ''])
+        );
 
         $response->assertSessionHasErrors('author');
     }
@@ -65,22 +61,47 @@ class BookReservationTest extends TestCase
     {
         $this->withoutExceptionHandling();
 
-        $this->post('/books', [
-            'title' => 'Cool book',
-            'author' => 'Mark',
-        ]);
+        $this->post('/books', $this->formInput());
 
         $book = Book::first();
 
-        $response = $this->patch('/books/' . $book->id, [
+        $response = $this->patch($book->path(), [
             'title' => 'New title',
             'author' => 'New author',
         ]);
 
         $this->assertEquals('New title', Book::first()->title);
         $this->assertEquals('New author', Book::first()->author);
-
+        $response->assertRedirect($book->fresh()->path());
     }
 
+    /**
+     * @test
+    */
+    public function a_book_can_be_deleted()
+    {
+        $this->withoutExceptionHandling();
+
+        $this->post('/books', $this->formInput());
+
+        $book = Book::first();
+        $response = $this->delete($book->path());
+
+
+        $this->assertCount(0, Book::all());
+        $response->assertRedirect('/books');
+    }
+
+    /**
+     * Retorna apenas uma array com os inputs
+     */
+    protected function formInput()
+    {
+        return 
+        [
+            'title' => 'Cool title',
+            'author' => 'Mark',
+        ];
+    }
 
 }
