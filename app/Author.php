@@ -16,7 +16,7 @@ class Author extends Model
 
 
     /**
-     * Define o formato de hora e define 'dob' como uma instância de Carbon
+     * Define o formato de hora e define 'dob' como uma instância de Carbon 
      */
     public function setDobAttribute($dob)
     {	
