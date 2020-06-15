@@ -8,7 +8,7 @@ use Tests\TestCase;
 use Carbon\Carbon;
 use App\Author;
 
-class AuthorTest extends TestCase
+class AuthorManagementTest extends TestCase
 {
     use RefreshDatabase;
 
