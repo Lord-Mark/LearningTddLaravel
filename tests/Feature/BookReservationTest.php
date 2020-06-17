@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Book;
+use App\Author;
 
 class BookReservationTest extends TestCase
 {
@@ -47,10 +48,10 @@ class BookReservationTest extends TestCase
         // $this->withoutExceptionHandling();
 
         $response = $this->post('/books', 
-            array_merge($this->formInput(), ['author' => ''])
+            array_merge($this->formInput(), ['author_id' => ''])
         );
 
-        $response->assertSessionHasErrors('author');
+        $response->assertSessionHasErrors('author_id');
     }
 
 
@@ -67,12 +68,18 @@ class BookReservationTest extends TestCase
 
         $response = $this->patch($book->path(), [
             'title' => 'New title',
-            'author' => 'New author',
+            'author_id' => 'New author',
         ]);
 
-        $this->assertEquals('New title', Book::first()->title);
-        $this->assertEquals('New author', Book::first()->author);
-        $response->assertRedirect($book->fresh()->path());
+        $author = Author::all();
+
+        $this->assertEquals('Mark', $author->find(1)->name);
+        $this->assertEquals('New author', $author->find(2)->name);
+        $this->assertEquals('New title', $book->fresh()->title);
+        
+        $this->assertCount(2, $author);
+
+        $response->assertRedirect($book->path());
     }
 
     /**
@@ -93,6 +100,20 @@ class BookReservationTest extends TestCase
     }
 
     /**
+     * @test
+     */
+    public function an_author_is_automatically_created()
+    {
+        $this->post('/books', $this->formInput());
+
+        $book = Book::first();
+        $author = Author::all();
+
+        $this->assertEquals($author->first()->id, $book->author_id);
+        $this->assertCount(1, $author);
+    }
+
+    /**
      * Retorna apenas uma array com os inputs
      */
     protected function formInput()
@@ -100,7 +121,7 @@ class BookReservationTest extends TestCase
         return 
         [
             'title' => 'Cool title',
-            'author' => 'Mark',
+            'author_id' => 'Mark',
         ];
     }
 

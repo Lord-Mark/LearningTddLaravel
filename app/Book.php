@@ -11,10 +11,12 @@ class Book extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'title', 'author',
-    ];
 
+    protected $guarded = [];
+    
+    // protected $fillable = [
+    //     'title', 'author',
+    // ];
 
     /**
      * Retorna a 'url' do livro
@@ -22,6 +24,13 @@ class Book extends Model
     public function path()
     {
     	return ('/books/' . $this->id);
+    }
+
+    public function setAuthorIdAttribute($author)
+    {
+        $this->attributes['author_id'] = (Author::firstOrCreate([
+                    'name' => $author
+                ]))->id;
     }
 
 }
